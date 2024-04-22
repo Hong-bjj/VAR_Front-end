@@ -6,5 +6,5 @@ export interface UserInfo {
   point: number;
   subscribeExpiration: string;
   rating: number;
-  userType: string;
+  userType: any;
 }

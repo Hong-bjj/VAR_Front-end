@@ -61,6 +61,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("Authorization");
 
     if (token) {
+      setIsLoading(true);
       try {
         const response = await HttpAuthInstance.get("/api/user/profile");
         followingListAPI();
@@ -76,7 +77,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
     }
-    setIsLoading(false); // 로딩 상태를 false로 설정하여 로딩이 완료됨을 나타냅니다.
 
     if (token) {
       try {
@@ -89,6 +89,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error(error);
       }
+      setIsLoading(false);
     }
   };
 

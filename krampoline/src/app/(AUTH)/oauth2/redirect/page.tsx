@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@/app/utils/UserProvider";
@@ -8,6 +8,7 @@ import HttpAuthInstance from "@/app/utils/api/interceptor/axiosConfig";
 
 function Oauth() {
   const params = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setKakaoInfo, setIsLoggedIn, fetchUserInfo, followingListAPI } =
     useUser();
@@ -19,7 +20,7 @@ function Oauth() {
     // 받은 코드를 서버로 POST 요청하여 처리하는 함수
     async function postCode(code: string) {
       if (!code) return; // 코드가 없으면 함수 종료
-
+      setIsLoading(true);
       try {
         // 카카오 OAuth 서버로부터 액세스 토큰을 요청합니다.
         const response = await HttpAuthInstance.post(
@@ -37,9 +38,11 @@ function Oauth() {
           if (accessToken) {
             localStorage.setItem("Authorization", accessToken);
             setIsLoggedIn(true);
-            fetchUserInfo();
-            followingListAPI();
-            router.replace("/"); // 홈으로 리다이렉트
+            setIsLoading(true);
+            await fetchUserInfo();
+            await followingListAPI();
+            console.log("여기");
+            router.replace("/");
           }
         } else if (response.data.type === "JOIN") {
           const KakaoInfo = response.data["kakaoUserResDto"];
@@ -51,6 +54,8 @@ function Oauth() {
         console.error(error);
 
         router.replace("/");
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -60,14 +65,15 @@ function Oauth() {
       router.replace("/");
     }
   }, [params, router]); // 의존성 배열에 params, router 추가
-
-  return <div></div>;
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 }
 
 const OAuth2RedirectPage = () => {
   // 페이지 컨텐츠는 없으며, OAuth 인증 처리 로직만 수행합니다.
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <Oauth />
     </Suspense>
   );
